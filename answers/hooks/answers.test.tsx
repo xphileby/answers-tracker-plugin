@@ -91,8 +91,11 @@ test('history is indexed once at start, and its rows take ids as the transcript 
 
     return <Text>engine</Text>
   })
-  on('session.messages', () => ({
-    value: [
+  on('session.messages', (_, e) => ({
+    value: e.agentId === 'a1' ? [
+      { role: 'user', text: 'Agent task', toolUses: [] },
+      { role: 'assistant', text: 'Agent report', toolUses: [] },
+    ] : e.agentId !== undefined ? { deny: 'unknown agent' } : [
       { role: 'user', text: 'Old prompt', toolUses: [] },
       { role: 'assistant', text: '**Old** answer', toolUses: [] },
       { role: 'user', text: '<command-name>/answers</command-name>', toolUses: [] },
@@ -138,9 +141,23 @@ test('history is indexed once at start, and its rows take ids as the transcript 
   ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
   expect(await ui.find({ type: 'Button', text: /Old answer/ })).toBeUndefined()
   await ui.unmount()
-  expect((await $.command.run(run('index'))).text).toMatch(/^Indexed 4 rows/)
+  expect((await $.command.run(run('index'))).text).toMatch(/^Indexed 4 rows of the main conversation/)
   ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
   expect(await ui.find({ type: 'Button', text: /Old answer/ })).toBeDefined()
   expect(await ui.find({ type: 'Button', text: /Second prompt/ })).toBeDefined()
+  await ui.unmount()
+
+  // An agent's transcript first in view: its history, once; `index` there rebuilds the agent's.
+  const agent = { ...PANE, props: { ...PANE.props, view: { agentId: 'a1' } }, surface: 'terminal' } as const
+  ui = await $.ui.mount(agent)
+  await clock.settle()
+  await ui.unmount()
+  ui = await $.ui.mount(agent)
+  expect(await ui.find({ type: 'Button', text: /Agent report/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', text: /Old answer/ })).toBeUndefined()
+  await ui.unmount()
+  expect((await $.command.run(run('index'))).text).toMatch(/^Indexed 2 rows of agent a1/)
+  ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
+  expect(await ui.find({ type: 'Button', text: /Old answer/ })).toBeDefined() // the main's untouched
   await ui.unmount()
 })

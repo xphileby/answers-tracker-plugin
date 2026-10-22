@@ -1,6 +1,6 @@
 {
   "name": "answers",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Index of this session's answers in a pane: click an entry to jump to it in the transcript",
   "types": "./types/index.d.ts",
   "author": {

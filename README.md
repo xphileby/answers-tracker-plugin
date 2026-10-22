@@ -30,13 +30,13 @@ The pane docks beside the transcript in the fullscreen renderer from 110 columns
 | `/answers all` | Shows every text block, interim ones included. |
 | `/answers final` | Shows closing answers only (the default). |
 | `/answers clear` | Empties the index for this session. |
-| `/answers index` | Rebuilds the main conversation's index from the session's history, after a `clear` or whenever it looks wrong. |
+| `/answers index` | Rebuilds the index of the conversation in view (the main one, or the agent's) from the session's history, after a `clear` or whenever it looks wrong. |
 
 ## Examples
 
 **A long task.** You ask for a refactor, the model runs sixty tool calls and writes a report at the end. Three more prompts later the report is forty screens up. Open the pane, click the answer row, and the transcript is there.
 
-**Parallel subagents.** The main conversation spawns three agents. Open one of them from the tasks list and the pane switches to that agent's prompts and answers; come back to the main transcript and it switches back. Each conversation keeps its own index.
+**Parallel subagents.** The main conversation spawns three agents. Open one of them from the tasks list and the pane switches to that agent's prompts and answers, reading the agent's history the first time; come back to the main transcript and it switches back. Each conversation keeps its own index.
 
 **A resumed session.** `claude --resume` loads yesterday's transcript. The pane lists its prompts and answers as soon as it opens, without time stamps (the engine does not hand those out); each row becomes clickable once the transcript has drawn that message.
 
@@ -44,7 +44,7 @@ The pane docks beside the transcript in the fullscreen renderer from 110 columns
 
 ## How it works
 
-Every row a conversation keeps passes through the plugin as it is stored, in the main conversation and in each subagent's. Prompts and the model's text blocks are indexed by their transcript id. When a turn completes, its closing text is marked as the final answer. The pane reads the index and draws the conversation in view. History that was stored before the plugin loaded (a resumed session, a plugin installed mid-session) is read once from the session's messages.
+Every row a conversation keeps passes through the plugin as it is stored, in the main conversation and in each subagent's. Prompts and the model's text blocks are indexed by their transcript id. When a turn completes, its closing text is marked as the final answer. The pane reads the index and draws the conversation in view. History that was stored before the plugin loaded (a resumed session, a plugin installed mid-session, an agent's transcript opened for the first time) is read once from the session's messages.
 
 The index is kept in session state, so a plugin reload keeps it, and capped at 400 rows per conversation. The plugin reads no files, runs no processes and sends nothing anywhere.
 
