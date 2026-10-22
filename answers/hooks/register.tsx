@@ -297,14 +297,15 @@ export const register: Register = on => {
     return (
       <Box flexDirection="column">
         <Box>
-          <Button key="view" plain onPress={cycle}>
-            <Text weight="semibold">Answers</Text> ({clip(label, 40)})
-          </Button>
-          <Text dimColor> {finals} </Text>
+          <Text weight="semibold">Answers </Text>
+          <Text dimColor>{finals} </Text>
           <Button key="mode" plain dimColor onPress={() => update($, showAll, v => !v)}>
             {all ? '[all blocks]' : '[final only]'}
           </Button>
         </Box>
+        <Button key="view" plain onPress={cycle}>
+          {clip(`⇄ ${label}`, width)}
+        </Button>
         {shown.length === 0 && <Text dimColor>No answers yet.</Text>}
         {shown.map(row =>
           row.role === 'user' ? (

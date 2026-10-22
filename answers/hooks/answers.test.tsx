@@ -89,13 +89,13 @@ test("the pane lists the transcript in view: an agent's rows under its view, the
   expect(await agent.find({ key: 'm1' })).toBeUndefined()
 
   // The header names the conversation shown; a press on it asks the view for the next one.
-  expect((await agent.find({ key: 'view' }))?.text).toBe('Answers (Review the mod)')
+  expect((await agent.find({ key: 'view' }))?.text).toBe('⇄ Review the mod')
   await agent.press({ key: 'view' })
   expect(views).toEqual([{}]) // after the agent comes the main conversation
   await agent.unmount()
 
   const again = await $.ui.mount({ ...PANE, surface: 'terminal' })
-  expect((await again.find({ key: 'view' }))?.text).toBe('Answers (main)')
+  expect((await again.find({ key: 'view' }))?.text).toBe('⇄ main')
   await again.press({ key: 'view' })
   expect(views).toEqual([{}, { agentId: 'a1' }])
   await again.unmount()
