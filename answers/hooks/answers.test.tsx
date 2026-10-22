@@ -22,6 +22,7 @@ test('prompts and the whole final answer are listed; interim text only under [al
   on('command.register', () => ({ value: { command: 'answers' } }))
   on('ui.open', () => ({ value: { isPlaced: true } }))
   on('session.start', (_, e) => ({ cwd: e.cwd }))
+  on('session.messages', () => ({ value: [] }))
   on('turn.complete', (_, e) => ({ text: e.answer }))
   mock.clock(on)
   mock.session(on)
@@ -55,6 +56,7 @@ test("the pane lists the transcript in view: an agent's rows under its view, the
   on('command.register', () => ({ value: { command: 'answers' } }))
   on('ui.open', () => ({ value: { isPlaced: true } }))
   on('session.start', (_, e) => ({ cwd: e.cwd }))
+  on('session.messages', () => ({ value: [] }))
   on('turn.complete', (_, e) => ({ text: e.answer }))
   mock.clock(on)
   mock.session(on)
@@ -78,4 +80,55 @@ test("the pane lists the transcript in view: an agent's rows under its view, the
   expect(await agent.find({ key: 'g1' })).toBeDefined()
   expect(await agent.find({ key: 'm1' })).toBeUndefined()
   await agent.unmount()
+})
+
+test('history is indexed once at start, and its rows take ids as the transcript draws them', async ($, on) => {
+  on('command.register', () => ({ value: { command: 'answers' } }))
+  on('ui.open', () => ({ value: { isPlaced: true } }))
+  on('session.start', (_, e) => ({ cwd: e.cwd }))
+  on('ui.render', ($, e) => {
+    const { Text } = $.ui.resolve(e)
+
+    return <Text>engine</Text>
+  })
+  on('session.messages', () => ({
+    value: [
+      { role: 'user', text: 'Old prompt', toolUses: [] },
+      { role: 'assistant', text: '**Old** answer', toolUses: [] },
+      { role: 'user', text: '<command-name>/answers</command-name>', toolUses: [] },
+      { role: 'user', text: 'x', toolUses: [], toolResults: [{ tool_use_id: 't1', text: 'x', isError: false }] },
+      { role: 'user', text: 'Second prompt', toolUses: [] },
+      { role: 'assistant', text: 'Second answer', toolUses: [] },
+    ],
+  }))
+  const clock = mock.clock(on)
+  mock.session(on)
+
+  await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+  let ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
+  expect((await ui.find({ type: 'Button', text: /Old prompt/ }))?.text).toBe('› Old prompt')
+  expect(await ui.find({ type: 'Button', text: /Old answer/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', text: /Second answer/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', text: /command-name/ })).toBeUndefined()
+  await ui.unmount()
+
+  // The transcript draws the old answer: the row learns its id.
+  const drawn = await $.ui.mount({
+    plugin: 'answers',
+    component: 'AssistantMessage',
+    requestId: 'h1',
+    surface: 'terminal',
+    props: { text: '**Old** answer', isFirstOfReply: true, onScreen: { first: 0, last: 0, of: 1 } },
+  })
+  await clock.settle()
+  await drawn.unmount()
+  ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
+  expect((await ui.find({ key: 'h1' }))?.text).toMatch(/Old answer/)
+  await ui.unmount()
+
+  // Opening again pulls nothing twice.
+  await $.command.run(run(''))
+  ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
+  expect(await ui.findAll({ type: 'Button', text: /Old answer/ })).toHaveLength(1)
+  await ui.unmount()
 })

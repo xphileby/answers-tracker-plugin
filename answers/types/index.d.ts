@@ -16,6 +16,6 @@ export type AnswerEntry = {
 
 declare module 'claude-code' {
   interface PluginState {
-    answers: { items: AnswerEntry[]; showAll: boolean }
+    answers: { items: AnswerEntry[]; showAll: boolean; pulled: boolean }
   }
 }
