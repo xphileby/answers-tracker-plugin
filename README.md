@@ -83,3 +83,13 @@ claude --plugin-dir ./answers    # one session with the folder's version, no ins
 ```
 
 The plugin is one hooks module, `answers/hooks/register.tsx`, with its state contract in `answers/types/index.d.ts` and its tests beside it.
+
+## Changes
+
+- 0.5.1: the conversation switcher on its own `⇄` row under the header.
+- 0.5.0: the pane names the conversation shown; a press cycles through the main conversation and the session's agents.
+- 0.4.1: an agent's history is indexed when its transcript is first viewed; `/answers index` acts on the conversation in view.
+- 0.4.0: `/answers index` rebuilds the index from the session's history.
+- 0.3.0: history stored before the plugin loaded is indexed on start and on open.
+- 0.2.0: one index per conversation, subagents included; the whole closing answer is marked final; tests.
+- 0.1.0: the pane, `/answers`, jump on click.
