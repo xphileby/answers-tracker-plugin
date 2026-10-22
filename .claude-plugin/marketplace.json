@@ -6,7 +6,7 @@
     {
       "name": "answers",
       "source": "./answers",
-      "version": "0.4.1",
+      "version": "0.5.0",
       "description": "Index of the session's answers in a pane; click an entry to jump to it in the transcript"
     }
   ]

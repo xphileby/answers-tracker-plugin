@@ -272,6 +272,22 @@ export const register: Register = on => {
     const shown = all ? rows : rows.filter(row => row.role === 'user' || row.isFinal)
     const finals = rows.filter(row => row.isFinal).length
 
+    // The header names the conversation shown; a press on it shows the next one:
+    // the main conversation, then each agent of the session, round and round.
+    const agents = await $.agent.list()
+    const label = view === undefined ? 'main' : agents.find(a => a.id === view)?.description || view
+    const cycle = async () => {
+      const ids: (string | undefined)[] = [undefined, ...(await $.agent.list()).map(a => a.id)]
+      if (ids.length === 1) return $.ui.toast('No agent conversations in this session yet.')
+      const from = ids.indexOf(view)
+      for (let i = 1; i <= ids.length; i++) {
+        const id = ids[(from + i) % ids.length]
+        const shown = await $.ui.view(id === undefined ? {} : { agentId: id })
+        if (shown.deny === undefined) return
+      }
+      $.ui.toast('No other conversation can be shown now.')
+    }
+
     const jump = (id: string) => async () => {
       if (isPlaceholder(id)) return $.ui.toast('A history row: it becomes a jump target once the transcript has drawn it.')
       const moved = await $.ui.scroll({ to: { requestId: id }, block: 'start' })
@@ -281,8 +297,10 @@ export const register: Register = on => {
     return (
       <Box flexDirection="column">
         <Box>
-          <Text weight="semibold">Answers </Text>
-          <Text dimColor>{finals} </Text>
+          <Button key="view" plain onPress={cycle}>
+            <Text weight="semibold">Answers</Text> ({clip(label, 40)})
+          </Button>
+          <Text dimColor> {finals} </Text>
           <Button key="mode" plain dimColor onPress={() => update($, showAll, v => !v)}>
             {all ? '[all blocks]' : '[final only]'}
           </Button>

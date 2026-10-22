@@ -5,7 +5,7 @@ A Claude Code plugin that keeps an index of the session's answers in a pane besi
 ## What you see
 
 ```
- Answers 3 [final only]
+ Answers (main) 3 [final only]
  › 09:12 Review the plugins in this folder and suggest fixes
    The plugin validates cleanly. One real bug and four improvements…
  › 09:40 Check the theory about agent sessions
@@ -14,6 +14,7 @@ A Claude Code plugin that keeps an index of the session's answers in a pane besi
  ● Done. Validation, tsc and both tests pass on the real folder…
 ```
 
+- `Answers (…)` names the conversation shown: `main`, or an agent's task in a few words. A click on it shows the next one, round and round through the main conversation and the session's agents.
 - `›` rows are your prompts, dim, with the time they were sent.
 - The other rows are answers: the first meaningful line of each, markdown stripped.
 - `●` marks an answer the transcript shows on screen right now.

@@ -21,6 +21,7 @@ const run = (args: string, isFullscreen = true) =>
 test('prompts and the whole final answer are listed; interim text only under [all blocks]', async ($, on) => {
   on('command.register', () => ({ value: { command: 'answers' } }))
   on('ui.open', () => ({ value: { isPlaced: true } }))
+  on('agent.list', () => ({ value: [{ id: 'a1', description: 'Review the mod', type: 'general-purpose', status: 'running' }] }))
   on('session.start', (_, e) => ({ cwd: e.cwd }))
   on('session.messages', () => ({ value: [] }))
   on('turn.complete', (_, e) => ({ text: e.answer }))
@@ -55,11 +56,18 @@ test('prompts and the whole final answer are listed; interim text only under [al
 test("the pane lists the transcript in view: an agent's rows under its view, the main's under none", async ($, on) => {
   on('command.register', () => ({ value: { command: 'answers' } }))
   on('ui.open', () => ({ value: { isPlaced: true } }))
+  on('agent.list', () => ({ value: [{ id: 'a1', description: 'Review the mod', type: 'general-purpose', status: 'running' }] }))
   on('session.start', (_, e) => ({ cwd: e.cwd }))
   on('session.messages', () => ({ value: [] }))
   on('turn.complete', (_, e) => ({ text: e.answer }))
   mock.clock(on)
   mock.session(on)
+  const views: unknown[] = []
+  on('ui.view', (_, e) => {
+    views.push(e)
+
+    return { value: {} }
+  })
   const turn = { reason: 'answer', durationMs: 1, isAborted: false } as const
 
   await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
@@ -79,12 +87,24 @@ test("the pane lists the transcript in view: an agent's rows under its view, the
   const agent = await $.ui.mount({ ...PANE, props: { ...PANE.props, view: { agentId: 'a1' } }, surface: 'terminal' })
   expect(await agent.find({ key: 'g1' })).toBeDefined()
   expect(await agent.find({ key: 'm1' })).toBeUndefined()
+
+  // The header names the conversation shown; a press on it asks the view for the next one.
+  expect((await agent.find({ key: 'view' }))?.text).toBe('Answers (Review the mod)')
+  await agent.press({ key: 'view' })
+  expect(views).toEqual([{}]) // after the agent comes the main conversation
   await agent.unmount()
+
+  const again = await $.ui.mount({ ...PANE, surface: 'terminal' })
+  expect((await again.find({ key: 'view' }))?.text).toBe('Answers (main)')
+  await again.press({ key: 'view' })
+  expect(views).toEqual([{}, { agentId: 'a1' }])
+  await again.unmount()
 })
 
 test('history is indexed once at start, and its rows take ids as the transcript draws them', async ($, on) => {
   on('command.register', () => ({ value: { command: 'answers' } }))
   on('ui.open', () => ({ value: { isPlaced: true } }))
+  on('agent.list', () => ({ value: [{ id: 'a1', description: 'Review the mod', type: 'general-purpose', status: 'running' }] }))
   on('session.start', (_, e) => ({ cwd: e.cwd }))
   on('ui.render', ($, e) => {
     const { Text } = $.ui.resolve(e)
