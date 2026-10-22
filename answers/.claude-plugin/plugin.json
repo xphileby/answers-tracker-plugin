@@ -1,0 +1,10 @@
+{
+  "name": "answers",
+  "version": "0.2.0",
+  "description": "Index of this session's answers in a pane: click an entry to jump to it in the transcript",
+  "types": "./types/index.d.ts",
+  "author": {
+    "name": "Pilip Yaromenka"
+  },
+  "license": "MIT"
+}

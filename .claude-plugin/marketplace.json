@@ -1,0 +1,13 @@
+{
+  "name": "answers-plugin",
+  "owner": { "name": "Pilip Yaromenka" },
+  "metadata": { "description": "A single-plugin marketplace carrying `answers` — an index of the session's answers in a pane; click an entry to jump to it in the transcript." },
+  "plugins": [
+    {
+      "name": "answers",
+      "source": "./answers",
+      "version": "0.2.0",
+      "description": "Index of the session's answers in a pane; click an entry to jump to it in the transcript"
+    }
+  ]
+}

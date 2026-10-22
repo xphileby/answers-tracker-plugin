@@ -1,0 +1,6 @@
+# Local gh CLI config (keeps the cached GitHub token out of git)
+.gh/
+.envrc
+.envrc.local
+# Written by Claude Code beside the mod when it loads the folder: this build's API types.
+answers/.claude-plugin/types/
