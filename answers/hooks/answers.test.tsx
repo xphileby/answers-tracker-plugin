@@ -131,4 +131,16 @@ test('history is indexed once at start, and its rows take ids as the transcript 
   ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
   expect(await ui.findAll({ type: 'Button', text: /Old answer/ })).toHaveLength(1)
   await ui.unmount()
+
+  // After a clear, nothing comes back on its own; `index` rebuilds it.
+  await $.command.run(run('clear'))
+  await $.command.run(run(''))
+  ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
+  expect(await ui.find({ type: 'Button', text: /Old answer/ })).toBeUndefined()
+  await ui.unmount()
+  expect((await $.command.run(run('index'))).text).toMatch(/^Indexed 4 rows/)
+  ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
+  expect(await ui.find({ type: 'Button', text: /Old answer/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', text: /Second prompt/ })).toBeDefined()
+  await ui.unmount()
 })

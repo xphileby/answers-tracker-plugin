@@ -30,6 +30,7 @@ The pane docks beside the transcript in the fullscreen renderer from 110 columns
 | `/answers all` | Shows every text block, interim ones included. |
 | `/answers final` | Shows closing answers only (the default). |
 | `/answers clear` | Empties the index for this session. |
+| `/answers index` | Rebuilds the main conversation's index from the session's history, after a `clear` or whenever it looks wrong. |
 
 ## Examples
 

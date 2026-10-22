@@ -6,7 +6,7 @@ Every prompt the person types and every assistant text block is indexed by its t
 
 History stored before the plugin loaded (a resumed session, a plugin installed mid-session) is read once from the session's messages: those rows have no time stamp, and each becomes a jump target once the transcript has drawn it.
 
-Commands: `/answers` opens the pane, `/answers all` or `/answers final` switches the filter, `/answers clear` empties the index.
+Commands: `/answers` opens the pane, `/answers all` or `/answers final` switches the filter, `/answers clear` empties the index, `/answers index` rebuilds the main conversation's part of it from the session's history.
 
 ## Install
 

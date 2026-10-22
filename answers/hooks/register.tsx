@@ -72,9 +72,9 @@ const isPlaceholder = (id: string): boolean => id.startsWith('history:')
  * come without ids or times (`$.session.messages` has neither); `adopt` gives
  * each its id once the transcript draws it, and until then a jump is refused.
  */
-const backfill = async ($: EngineInterface): Promise<void> => {
-  if (await read($, pulled)) return
-  if ((await read($, items)).some(row => row.agentId === undefined)) return
+const backfill = async ($: EngineInterface): Promise<number> => {
+  if (await read($, pulled)) return 0
+  if ((await read($, items)).some(row => row.agentId === undefined)) return 0
   let list: AnswerEntry[] = []
   for (const m of await $.session.messages()) {
     // ponytail: tool results and the engine's framing (<command-name>, <local-command-stdout>) are told by shape
@@ -84,10 +84,11 @@ const backfill = async ($: EngineInterface): Promise<void> => {
     if (m.role === 'user') list = markFinal(list, null, undefined)
     list.push({ id: `history:${list.length}`, role: m.role, text, at: 0, isFinal: false, onScreen: false })
   }
-  if (list.length === 0) return
+  if (list.length === 0) return 0
   const history = capLoop(markFinal(list, null, undefined), undefined)
   await update($, items, cur => (cur.some(row => row.agentId === undefined) ? cur : [...history, ...cur]))
   await update($, pulled, () => true)
+  return history.length
 }
 
 /** Gives a history row its transcript id once the transcript draws the row: matched by role and first line. */
@@ -116,7 +117,7 @@ export const register: Register = on => {
     await $.command.register({
       name: 'answers',
       description: "Index of this session's answers in a pane; click an entry to jump to it",
-      argumentHint: '[all|final|clear]',
+      argumentHint: '[all|final|clear|index]',
     })
     void $.ui.open({ id: PANE, title: 'Answers' })
     await backfill($).catch(err => $.ui.log(`answers: history not indexed: ${String(err)}`, { to: 'debug' }))
@@ -131,6 +132,15 @@ export const register: Register = on => {
       await update($, pulled, () => true) // emptied on purpose: no history comes back on the next open
       drawn.clear()
       return { text: 'Answers index cleared.' }
+    }
+    if (arg === 'index') {
+      // Drops the main conversation's rows and lists them afresh from the session's history.
+      await update($, items, list => list.filter(row => row.agentId !== undefined))
+      await update($, pulled, () => false)
+      drawn.clear()
+      const n = await backfill($)
+      void $.ui.open({ id: PANE, title: 'Answers' })
+      return { text: `Indexed ${n} rows of this conversation; a row becomes a jump target once the transcript draws it.` }
     }
     if (arg === 'all' || arg === 'final') {
       await update($, showAll, () => arg === 'all')

@@ -2,7 +2,7 @@
 
 Плагин `answers` для Claude Code: панель с индексом ответов текущей сессии;
 клик по записи прокручивает транскрипт к этому сообщению. Команды внутри
-сессии: `/answers`, `/answers all`, `/answers final`, `/answers clear`.
+сессии: `/answers`, `/answers all`, `/answers final`, `/answers clear`, `/answers index`.
 
 Архив устроен как маркетплейс из одного плагина:
 
